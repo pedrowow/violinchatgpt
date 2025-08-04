@@ -20,40 +20,40 @@
     <button onclick="playTarget()">Play Target Note</button>
   </div>
 
-  <div class="note-buttons">
-    <!-- Note buttons C to B with sharps -->
-    <button onclick="checkAnswer('C')">C</button>
-    <button onclick="checkAnswer('C#')">C♯</button>
-    <button onclick="checkAnswer('D')">D</button>
-    <button onclick="checkAnswer('D#')">D♯</button>
-    <button onclick="checkAnswer('E')">E</button>
-    <button onclick="checkAnswer('F')">F</button>
-    <button onclick="checkAnswer('F#')">F♯</button>
-    <button onclick="checkAnswer('G')">G</button>
-    <button onclick="checkAnswer('G#')">G♯</button>
-    <button onclick="checkAnswer('A')">A</button>
-    <button onclick="checkAnswer('A#')">A♯</button>
-    <button onclick="checkAnswer('B')">B</button>
-  </div>
+  <div class="note-buttons" id="note-buttons"></div>
 
   <div class="feedback" id="feedback"></div>
 
   <script>
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const noteMap = {
+      'C4': 'C', 'C#4': 'C#', 'D4': 'D', 'D#4': 'D#', 'E4': 'E',
+      'F4': 'F', 'F#4': 'F#', 'G4': 'G', 'G#4': 'G#', 'A4': 'A', 'A#4': 'A#', 'B4': 'B'
+    };
+
+    const scientificNotes = Object.keys(noteMap);
     let targetNote = '';
 
-    function playNote(note) {
-      const audio = new Audio(`violin-audio/violin-${note}.wav`);
+    const buttonContainer = document.getElementById('note-buttons');
+    for (const sciNote of scientificNotes) {
+      const displayNote = noteMap[sciNote];
+      const button = document.createElement('button');
+      button.textContent = displayNote;
+      button.onclick = () => checkAnswer(sciNote);
+      buttonContainer.appendChild(button);
+    }
+
+    function playNote(sciNote) {
+      const audio = new Audio(`violin-audio/violin-${sciNote}.wav`);
       audio.play();
     }
 
     function playReference() {
-      playNote('C');
+      playNote('C4');
     }
 
     function playTarget() {
-      const randomIndex = Math.floor(Math.random() * notes.length);
-      targetNote = notes[randomIndex];
+      const randomIndex = Math.floor(Math.random() * scientificNotes.length);
+      targetNote = scientificNotes[randomIndex];
       playNote(targetNote);
       document.getElementById('feedback').textContent = '';
     }
@@ -63,7 +63,9 @@
         document.getElementById('feedback').textContent = 'Play the target note first.';
         return;
       }
-      const result = answer === targetNote ? '✅ Correct!' : `❌ Nope, it was ${targetNote}`;
+      const result = answer === targetNote
+        ? '✅ Correct!'
+        : `❌ Nope, it was ${noteMap[targetNote]}`;
       document.getElementById('feedback').textContent = result;
     }
   </script>
