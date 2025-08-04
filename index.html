@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Violin Ear Trainer MVP</title>
+  <style>
+    body { font-family: sans-serif; background: white; color: black; text-align: center; padding: 2rem; }
+    h1 { font-size: 1.5rem; }
+    .note-buttons button { margin: 0.3rem; padding: 0.6rem 1rem; font-size: 1rem; }
+    .controls { margin: 1rem 0; }
+    .feedback { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>🎻 Violin Ear Training – Note Recognition</h1>
+
+  <div class="controls">
+    <button onclick="playReference()">Play Reference Note (C)</button>
+    <button onclick="playTarget()">Play Target Note</button>
+  </div>
+
+  <div class="note-buttons">
+    <!-- Note buttons C to B with sharps -->
+    <button onclick="checkAnswer('C')">C</button>
+    <button onclick="checkAnswer('C#')">C♯</button>
+    <button onclick="checkAnswer('D')">D</button>
+    <button onclick="checkAnswer('D#')">D♯</button>
+    <button onclick="checkAnswer('E')">E</button>
+    <button onclick="checkAnswer('F')">F</button>
+    <button onclick="checkAnswer('F#')">F♯</button>
+    <button onclick="checkAnswer('G')">G</button>
+    <button onclick="checkAnswer('G#')">G♯</button>
+    <button onclick="checkAnswer('A')">A</button>
+    <button onclick="checkAnswer('A#')">A♯</button>
+    <button onclick="checkAnswer('B')">B</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <script>
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    let targetNote = '';
+
+    function playNote(note) {
+      const audio = new Audio(`https://pedro-violin.s3.eu-west-2.amazonaws.com/violin-${note}.mp3`);
+      audio.play();
+    }
+
+    function playReference() {
+      playNote('C');
+    }
+
+    function playTarget() {
+      const randomIndex = Math.floor(Math.random() * notes.length);
+      targetNote = notes[randomIndex];
+      playNote(targetNote);
+      document.getElementById('feedback').textContent = '';
+    }
+
+    function checkAnswer(answer) {
+      if (!targetNote) {
+        document.getElementById('feedback').textContent = 'Play the target note first.';
+        return;
+      }
+      const result = answer === targetNote ? '✅ Correct!' : `❌ Nope, it was ${targetNote}`;
+      document.getElementById('feedback').textContent = result;
+    }
+  </script>
+</body>
+</html>
