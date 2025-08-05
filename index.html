@@ -43,7 +43,7 @@
     }
 
     function playNote(sciNote) {
-      const audio = new Audio(`violin-${sciNote}.wav`);
+      const audio = new Audio(`violin-${sciNote.toLowerCase()}.wav`);
       audio.play();
     }
 
