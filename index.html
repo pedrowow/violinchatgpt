@@ -25,9 +25,10 @@
   <div class="feedback" id="feedback"></div>
 
   <script>
+    // Use simplified filenames: Cs4 instead of C#4
     const noteMap = {
-      'C4': 'C', 'C#4': 'C#', 'D4': 'D', 'D#4': 'D#', 'E4': 'E',
-      'F4': 'F', 'F#4': 'F#', 'G4': 'G', 'G#4': 'G#', 'A4': 'A', 'A#4': 'A#', 'B4': 'B'
+      'C4': 'C', 'Cs4': 'C#', 'D4': 'D', 'Ds4': 'D#', 'E4': 'E',
+      'F4': 'F', 'Fs4': 'F#', 'G4': 'G', 'Gs4': 'G#', 'A4': 'A', 'As4': 'A#', 'B4': 'B'
     };
 
     const scientificNotes = Object.keys(noteMap);
@@ -43,8 +44,13 @@
     }
 
     function playNote(sciNote) {
-      const audio = new Audio(`violin-${sciNote.toLowerCase()}.wav`);
-      audio.play();
+      const filename = `violin-${sciNote.toLowerCase()}.wav`;
+      console.log('Playing:', filename);
+      const audio = new Audio(filename);
+      audio.play().catch(err => {
+        console.error('Playback failed:', err);
+        document.getElementById('feedback').textContent = '⚠️ Playback blocked or file missing.';
+      });
     }
 
     function playReference() {
