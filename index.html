@@ -17,8 +17,8 @@
 
   <div class="controls">
     <button onclick="playReference()">Play Reference Note (C)</button>
-    <button onclick="playTarget()">Play Target Note</button>
-    <button onclick="replayTarget()">Replay Target Note</button>
+    <button onclick="generateTargetNote()">Play Target Note</button>
+    <button onclick="replayTargetNote()">Replay Target Note</button>
   </div>
 
   <div class="note-buttons" id="note-buttons"></div>
@@ -57,14 +57,14 @@
       playNote('C4');
     }
 
-    function playTarget() {
+    function generateTargetNote() {
       const randomIndex = Math.floor(Math.random() * scientificNotes.length);
       targetNote = scientificNotes[randomIndex];
       playNote(targetNote);
       document.getElementById('feedback').textContent = '';
     }
 
-    function replayTarget() {
+    function replayTargetNote() {
       if (!targetNote) {
         document.getElementById('feedback').textContent = 'Play the target note first.';
         return;
