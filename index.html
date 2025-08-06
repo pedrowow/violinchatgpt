@@ -7,11 +7,11 @@
   <style>
     body { font-family: sans-serif; background: white; color: black; text-align: center; margin: 0; padding: 2rem; }
     h1 { margin-bottom: 1rem; }
-    .string-label { writing-mode: vertical-rl; transform: rotate(180deg); margin-right: 0.5rem; font-weight: bold; }
-    .fingerboard { display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; }
-    .string { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; position: relative; }
-    .note-row { display: flex; flex-direction: row; gap: 0.5rem; }
-    .note-circle { width: 50px; height: 50px; border-radius: 50%; background: #eee; border: 2px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+    .string-label { writing-mode: vertical-rl; transform: rotate(180deg); margin-bottom: 1rem; font-weight: bold; }
+    .fingerboard { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; margin: 2rem 0; }
+    .string { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
+    .note-group { display: flex; flex-direction: row; gap: 0.3rem; align-items: center; }
+    .note-circle { width: 50px; height: 50px; border-radius: 50%; background: #eee; border: 2px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .note-circle.correct { background: #c8f7c5; border-color: #27ae60; }
     .note-circle.incorrect { background: #f7c5c5; border-color: #e74c3c; }
     .controls { margin-top: 2rem; }
@@ -35,10 +35,10 @@
 
   <script>
     const noteMap = {
-      G: ['G3', 'A3', 'B3', 'C4'],
-      D: ['D4', 'E4', 'F5', 'Fs4', 'G4'],
-      A: ['A4', 'B4', 'C5', 'Cs5', 'D5'],
-      E: ['E5', 'F5', 'Fs5', 'G5', 'Gs5', 'A5']
+      G: [['G3'], ['A3'], ['B3'], ['C4']],
+      D: [['D4'], ['E4'], ['F5', 'Fs4'], ['G4']],
+      A: [['A4'], ['B4'], ['C5', 'Cs5'], ['D5']],
+      E: [['E5'], ['F5', 'Fs5'], ['G5', 'Gs5'], ['A5']]
     };
 
     const displayScore = document.getElementById('scoreDisplay');
@@ -52,35 +52,30 @@
     let correct = 0;
 
     function setupFingerboard() {
-      for (const [string, notes] of Object.entries(noteMap)) {
+      for (const [string, groups] of Object.entries(noteMap)) {
         const stringDiv = document.createElement('div');
         stringDiv.className = 'string';
+
         const label = document.createElement('div');
         label.className = 'string-label';
         label.textContent = string;
         stringDiv.appendChild(label);
 
-        const sortedNotes = notes.sort((a, b) => noteOrder(a) - noteOrder(b));
-        sortedNotes.forEach(note => {
-          const circle = document.createElement('div');
-          circle.className = 'note-circle';
-          circle.dataset.note = note;
-          circle.onclick = () => handleNoteClick(note, circle);
-          stringDiv.appendChild(circle);
+        groups.forEach(group => {
+          const groupDiv = document.createElement('div');
+          groupDiv.className = 'note-group';
+          group.forEach(note => {
+            const circle = document.createElement('div');
+            circle.className = 'note-circle';
+            circle.dataset.note = note;
+            circle.onclick = () => handleNoteClick(note, circle);
+            groupDiv.appendChild(circle);
+          });
+          stringDiv.appendChild(groupDiv);
         });
 
         fingerboard.appendChild(stringDiv);
       }
-    }
-
-    function noteOrder(note) {
-      const chromatic = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
-      const match = note.match(/^([A-Gs]{1,2})(\d)$/);
-      if (!match) return 0;
-      const name = match[1];
-      const octave = parseInt(match[2]);
-      const index = chromatic.indexOf(name);
-      return octave * 12 + index;
     }
 
     function playAudio(note) {
@@ -93,7 +88,7 @@
     }
 
     function playTargetNote() {
-      const allNotes = Object.values(noteMap).flat();
+      const allNotes = Object.values(noteMap).flat(2);
       targetNote = allNotes[Math.floor(Math.random() * allNotes.length)];
       playAudio(targetNote);
       clearFeedback();
