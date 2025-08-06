@@ -2,86 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Violin Ear Trainer MVP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Violin Ear Trainer</title>
   <style>
-    body { font-family: sans-serif; background: white; color: black; text-align: center; padding: 2rem; }
-    h1 { font-size: 1.5rem; }
-    .note-buttons button { margin: 0.3rem; padding: 0.6rem 1rem; font-size: 1rem; }
-    .controls { margin: 1rem 0; }
-    .feedback { margin-top: 1rem; font-weight: bold; }
+    body { font-family: sans-serif; background: white; color: black; text-align: center; margin: 0; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .string-label { writing-mode: vertical-rl; transform: rotate(180deg); margin-right: 0.5rem; font-weight: bold; }
+    .fingerboard { display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; }
+    .string { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .note-circle { width: 50px; height: 50px; border-radius: 50%; background: #eee; border: 2px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .note-circle.correct { background: #c8f7c5; border-color: #27ae60; }
+    .note-circle.incorrect { background: #f7c5c5; border-color: #e74c3c; }
+    .controls { margin-top: 2rem; }
+    button { margin: 0.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; }
+    .score { margin-top: 1rem; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>🎻 Violin Ear Training – Note Recognition</h1>
+  <h1>Violin Note Recognition</h1>
+  <div class="score" id="scoreDisplay">Score: 0 / 0</div>
+
+  <div class="fingerboard" id="fingerboard"></div>
 
   <div class="controls">
-    <button onclick="playReference()">Play Reference Note (G)</button>
-    <button onclick="generateTargetNote()">Play Target Note</button>
+    <button onclick="playReferenceNote()">Play Reference Note (G4)</button>
+    <button onclick="playTargetNote()">Play Random Note</button>
     <button onclick="replayTargetNote()">Replay Target Note</button>
+    <button onclick="stopPractice()">Stop</button>
   </div>
-
-  <div class="note-buttons" id="note-buttons"></div>
-
-  <div class="feedback" id="feedback"></div>
 
   <script>
     const noteMap = {
-      'C4': 'C', 'Cs4': 'C#', 'D4': 'D', 'Ds4': 'D#', 'E4': 'E',
-      'F4': 'F', 'Fs4': 'F#', 'G4': 'G', 'Gs4': 'G#', 'A4': 'A', 'As4': 'A#', 'B4': 'B'
+      G: ['G3', 'A3', 'B3', 'C4'],
+      D: ['D4', 'E4', 'Fs4', 'G4'],
+      A: ['A4', 'B4', 'Cs5', 'D5'],
+      E: ['E5', 'Fs5', 'Gs5', 'A5']
     };
 
-    const scientificNotes = Object.keys(noteMap);
+    const displayScore = document.getElementById('scoreDisplay');
+    const fingerboard = document.getElementById('fingerboard');
     let targetNote = '';
+    let total = 0;
+    let correct = 0;
 
-    const buttonContainer = document.getElementById('note-buttons');
-    for (const sciNote of scientificNotes) {
-      const displayNote = noteMap[sciNote];
-      const button = document.createElement('button');
-      button.textContent = displayNote;
-      button.onclick = () => checkAnswer(sciNote);
-      buttonContainer.appendChild(button);
+    function setupFingerboard() {
+      for (const [string, notes] of Object.entries(noteMap)) {
+        const stringDiv = document.createElement('div');
+        stringDiv.className = 'string';
+        const label = document.createElement('div');
+        label.className = 'string-label';
+        label.textContent = string;
+        stringDiv.appendChild(label);
+
+        notes.forEach(note => {
+          const circle = document.createElement('div');
+          circle.className = 'note-circle';
+          circle.dataset.note = note;
+          circle.onclick = () => checkAnswer(note, circle);
+          stringDiv.appendChild(circle);
+        });
+
+        fingerboard.appendChild(stringDiv);
+      }
     }
 
-    function playNote(sciNote) {
-      const filename = `violin-${sciNote.toLowerCase()}.wav`;
-      console.log('Playing:', filename);
-      const audio = new Audio(filename);
-      audio.play().catch(err => {
-        console.error('Playback failed:', err);
-        document.getElementById('feedback').textContent = '⚠️ Playback blocked or file missing.';
-      });
+    function playAudio(note) {
+      const audio = new Audio(`violin-${note.toLowerCase()}.wav`);
+      audio.play().catch(err => console.error('Playback error:', err));
     }
 
-    function playReference() {
-      playNote('G4');
+    function playReferenceNote() {
+      playAudio('G4');
     }
 
-    function generateTargetNote() {
-      const randomIndex = Math.floor(Math.random() * scientificNotes.length);
-      targetNote = scientificNotes[randomIndex];
-      playNote(targetNote);
-      document.getElementById('feedback').textContent = '';
+    function playTargetNote() {
+      const allNotes = Object.values(noteMap).flat();
+      targetNote = allNotes[Math.floor(Math.random() * allNotes.length)];
+      playAudio(targetNote);
+      clearFeedback();
     }
 
     function replayTargetNote() {
-      if (!targetNote) {
-        document.getElementById('feedback').textContent = 'Play the target note first.';
-        return;
-      }
-      playNote(targetNote);
+      if (targetNote) playAudio(targetNote);
     }
 
-    function checkAnswer(answer) {
-      if (!targetNote) {
-        document.getElementById('feedback').textContent = 'Play the target note first.';
-        return;
+    function checkAnswer(note, element) {
+      if (!targetNote) return;
+
+      total++;
+      const isCorrect = note === targetNote;
+      if (isCorrect) {
+        correct++;
+        element.classList.add('correct');
+      } else {
+        element.classList.add('incorrect');
+        const correctEl = document.querySelector(`.note-circle[data-note='${targetNote}']`);
+        if (correctEl) correctEl.classList.add('correct');
       }
-      const result = answer === targetNote
-        ? '✅ Correct!'
-        : `❌ Nope, it was ${noteMap[targetNote]}`;
-      document.getElementById('feedback').textContent = result;
+      updateScore();
     }
+
+    function clearFeedback() {
+      document.querySelectorAll('.note-circle').forEach(el => {
+        el.classList.remove('correct', 'incorrect');
+      });
+    }
+
+    function updateScore() {
+      displayScore.textContent = `Score: ${correct} / ${total}`;
+    }
+
+    function stopPractice() {
+      const percentage = total ? Math.round((correct / total) * 100) : 0;
+      const entry = { score: `${correct}/${total}`, percent: percentage, date: new Date().toLocaleDateString() };
+      const scores = JSON.parse(localStorage.getItem('violinScores') || '[]');
+      scores.push(entry);
+      localStorage.setItem('violinScores', JSON.stringify(scores));
+      alert(`Session saved. You scored ${entry.score} (${entry.percent}%)`);
+      location.reload();
+    }
+
+    setupFingerboard();
   </script>
 </body>
 </html>
