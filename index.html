@@ -45,7 +45,7 @@
     const replayIncorrectBtn = document.getElementById('replayIncorrect');
 
     let targetNote = '';
-    let selected = false;
+    let answerSubmitted = false;
     let incorrectNote = null;
     let total = 0;
     let correct = 0;
@@ -63,7 +63,7 @@
           const circle = document.createElement('div');
           circle.className = 'note-circle';
           circle.dataset.note = note;
-          circle.onclick = () => checkAnswer(note, circle);
+          circle.onclick = () => handleNoteClick(note, circle);
           stringDiv.appendChild(circle);
         });
 
@@ -85,7 +85,7 @@
       targetNote = allNotes[Math.floor(Math.random() * allNotes.length)];
       playAudio(targetNote);
       clearFeedback();
-      selected = false;
+      answerSubmitted = false;
       incorrectNote = null;
       replayIncorrectBtn.style.display = 'none';
     }
@@ -98,10 +98,10 @@
       if (incorrectNote) playAudio(incorrectNote);
     }
 
-    function checkAnswer(note, element) {
-      if (!targetNote || selected) return;
+    function handleNoteClick(note, element) {
+      if (!targetNote || answerSubmitted) return;
+      answerSubmitted = true;
 
-      selected = true;
       total++;
       const isCorrect = note === targetNote;
       if (isCorrect) {
