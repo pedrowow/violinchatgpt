@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Violin Ear Trainer</title>
   <style>
@@ -28,6 +28,7 @@
     <button onclick="playReferenceNote()">Play Reference Note (G4)</button>
     <button onclick="playTargetNote()">Play Random Note</button>
     <button onclick="replayTargetNote()">Replay Target Note</button>
+    <button onclick="replayIncorrectNote()" id="replayIncorrect" style="display:none">Replay Your Guess</button>
     <button onclick="stopPractice()">Stop</button>
   </div>
 
@@ -41,7 +42,11 @@
 
     const displayScore = document.getElementById('scoreDisplay');
     const fingerboard = document.getElementById('fingerboard');
+    const replayIncorrectBtn = document.getElementById('replayIncorrect');
+
     let targetNote = '';
+    let selected = false;
+    let incorrectNote = null;
     let total = 0;
     let correct = 0;
 
@@ -80,15 +85,23 @@
       targetNote = allNotes[Math.floor(Math.random() * allNotes.length)];
       playAudio(targetNote);
       clearFeedback();
+      selected = false;
+      incorrectNote = null;
+      replayIncorrectBtn.style.display = 'none';
     }
 
     function replayTargetNote() {
       if (targetNote) playAudio(targetNote);
     }
 
-    function checkAnswer(note, element) {
-      if (!targetNote) return;
+    function replayIncorrectNote() {
+      if (incorrectNote) playAudio(incorrectNote);
+    }
 
+    function checkAnswer(note, element) {
+      if (!targetNote || selected) return;
+
+      selected = true;
       total++;
       const isCorrect = note === targetNote;
       if (isCorrect) {
@@ -96,6 +109,8 @@
         element.classList.add('correct');
       } else {
         element.classList.add('incorrect');
+        incorrectNote = note;
+        replayIncorrectBtn.style.display = 'inline-block';
         const correctEl = document.querySelector(`.note-circle[data-note='${targetNote}']`);
         if (correctEl) correctEl.classList.add('correct');
       }
