@@ -8,8 +8,8 @@
     body { font-family: sans-serif; background: white; color: black; text-align: center; margin: 0; padding: 2rem; }
     h1 { margin-bottom: 1rem; }
     .score { margin-bottom: 1rem; font-weight: bold; }
-    .fingerboard { display: grid; grid-template-columns: repeat(5, 60px); gap: 10px; justify-content: center; margin-bottom: 2rem; }
-    .label-cell { font-weight: bold; writing-mode: vertical-rl; text-align: center; }
+    .fingerboard { display: grid; grid-template-columns: 60px repeat(4, 60px); gap: 10px; justify-content: center; margin-bottom: 2rem; }
+    .label-cell { font-weight: bold; text-align: right; padding-right: 5px; }
     .note-cell { width: 50px; height: 50px; border-radius: 50%; background: #eee; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .note-cell.correct { background: #c8f7c5; border-color: #27ae60; }
     .note-cell.incorrect { background: #f7c5c5; border-color: #e74c3c; }
@@ -33,11 +33,13 @@
 
   <script>
     const layout = [
-      ['G3', 'D4', 'A4', 'E5'],
-      ['A3', 'E4', 'B4', 'F5'],
-      ['B3', null, 'C5', 'G5'],
-      [null, 'Fs4', 'Cs5', 'Gs5'],
-      ['C4', 'G4', 'D5', 'A5']
+      ['Open string', 'G3', 'D4', 'A4', 'E5'],
+      ['1st finger', 'A3', 'E4', 'B4', 'F5'],
+      ['1st finger high', 'B3', 'Fs4', 'C5', 'G5'],
+      ['2nd finger', 'C4', 'G4', 'D5', 'A5'],
+      ['2nd finger high', '', '', 'Cs5', 'Gs5'],
+      ['3rd finger', '', '', 'E5', 'B5'],
+      ['4th finger', 'D4', 'A4', 'E5', 'B5']
     ];
 
     const strings = ['G', 'D', 'A', 'E'];
@@ -53,26 +55,23 @@
     let correct = 0;
 
     function setupFingerboard() {
-      // Add top-left corner cell
-      const emptyLabel = document.createElement('div');
-      emptyLabel.className = 'empty-cell';
-      fingerboard.appendChild(emptyLabel);
-
-      // Add string labels
-      strings.forEach(string => {
+      // Header row
+      fingerboard.appendChild(document.createElement('div'));
+      strings.forEach(s => {
         const label = document.createElement('div');
         label.className = 'label-cell';
-        label.textContent = string;
+        label.textContent = s;
         fingerboard.appendChild(label);
       });
 
-      // Add notes row by row
       layout.forEach(row => {
         const label = document.createElement('div');
         label.className = 'label-cell';
+        label.textContent = row[0];
         fingerboard.appendChild(label);
 
-        row.forEach(note => {
+        for (let i = 1; i <= 4; i++) {
+          const note = row[i];
           if (note) {
             const cell = document.createElement('div');
             cell.className = 'note-cell';
@@ -84,7 +83,7 @@
             empty.className = 'empty-cell';
             fingerboard.appendChild(empty);
           }
-        });
+        }
       });
     }
 
@@ -98,7 +97,7 @@
     }
 
     function playTargetNote() {
-      const allNotes = layout.flat().filter(Boolean);
+      const allNotes = layout.flat().slice(1).filter(n => n && !n.includes('finger') && n !== 'Open string');
       targetNote = allNotes[Math.floor(Math.random() * allNotes.length)];
       playAudio(targetNote);
       clearFeedback();
